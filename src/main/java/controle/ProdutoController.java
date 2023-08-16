@@ -1,82 +1,81 @@
 package controle;
 
 import entidades.Produto;
-import java.util.ArrayList;
+import enums.*;
 import java.util.List;
-import servicos.ProdutoComparator;
-import servicos.WriterService;
+import servicos.*;
 
-public class ProdutoController implements Controller<Produto> {
+public class ProdutoController {
+    
+    //Caminho do arquivo para registros
+    public static final String PATH = "C:\\Users\\Acer\\Documents\\NetBeansProjects\\Exercicios\\src\\main\\java\\servicos\\txt\\produto\\produto.txt";
 
-    private static final ProdutoController INSTANCE = new ProdutoController();
-    private List<Produto> produtos = new ArrayList<>();
+    private ProdutoService produtoService;
+    private static ProdutoController instance;
 
     private ProdutoController() {
     }
 
+    //Injeção de dependência
+    public void setProdutoService(ProdutoService produtoService) {
+        this.produtoService = produtoService;
+    }
+    
     public static ProdutoController getInstance() {
-        return INSTANCE;
-    }
-
-    public List<Produto> getProdutos() {
-        return produtos;
-    }
-
-    public void setProdutos(List<Produto> produtos) {
-        this.produtos = produtos;
-    }
-
-    @Override
-    public void criarRegistro(Produto produto) {
-        
-        //Caminho TXT
-        String caminho = "C:\\Users\\Acer\\Documents\\NetBeansProjects\\Exercicios\\src\\main\\java\\servicos\\txt\\produto\\produto.txt";
-        
-        if (!produtos.isEmpty() && produtoExiste(produto.getNome())){
-            incrementarQtd(produto.getNome());
-            WriterService.escreverRegistro("Nova/o " +produto.getNome()+ " adicionado", caminho);
+        if (instance == null) {
+            instance = new ProdutoController();
         }
-        
-        else {
-           produtos.add(produto);
-           WriterService.escreverRegistro("Produto adicionado!", produto, caminho);
+        return instance;
+    }
+
+    public void gerenciarOpcao(int opc) {
+
+        List<OpcaoCrud> opcoesCrud = OpcaoCrud.getElementos();
+
+        OpcaoCrud opcaoEscolhida = null;
+        for (OpcaoCrud opcao : opcoesCrud) {
+
+            if (opcao.getId() == opc) {
+                opcaoEscolhida = opcao;
+                break;
+            }
         }
-        
-        System.out.println();
-        System.out.println("Feito! Informações no arquivo produto.txt");
-        System.out.println();
-    }
-    
-    
-    public boolean produtoExiste(final String s) {
-        return produtos.stream()
-                .anyMatch(p -> p.getNome().equalsIgnoreCase(s));
-    }
-    
-    ///Aumenta quantidade daquele produto no estoque
-    private void incrementarQtd(final String nome) {
-        produtos.stream().
-                filter(p -> p.getNome().equals(nome))
-                .forEach(produto -> produto.incrementarQuantidade());
-    }
 
+        switch (opcaoEscolhida) {
+            case CRIAR:
+
+                Produto produto = produtoService.criarProduto();
+                
+                //Produto já existe
+                if (produto.getQuantidade() > 1) {
+                    WriterService.escreverRegistro("Novo/a " + produto.getNome() + "!", PATH);
+                }
+                else {
+                    produtoService.addProduto(produto);
+                    WriterService.escreverRegistro("Produto adicionado!" + produto.toString(), PATH);
+                }
+                
+                
+                break;
+            case BUSCAR:
+
+                break;
+//            case ALTERAR:
+//
+//                Produto produtoAntigo = produtoService.filtrarProduto();
+//                Produto produtoNovo = produtoService.alterarProduto(produtoAntigo);
+//                produtoService.alterarRegistro(produtoAntigo, produtoNovo);
+//
+//                break;
+            case DELETAR:
+
+                break;
+            case EXIBIR:
+
+                break;
+        }
+
+    }
     
-    @Override
-    public void buscarRegistro(int id) {
-    }
-
-    @Override
-    public void alterarRegistro(Produto produtoAntigo, Produto produtoNovo) {
-    }
-
-    @Override
-    public void deletarRegistro(Produto produto) {
-    }
-
     
-    //Chama produto comparator
-    @Override
-    public void classificarRegistros(int opc) {
-        produtos.sort(new ProdutoComparator(opc));
-    }
 }

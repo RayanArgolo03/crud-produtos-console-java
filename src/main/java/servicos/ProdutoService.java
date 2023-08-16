@@ -1,231 +1,275 @@
 package servicos;
 
-import controle.ProdutoController;
 import entidades.Produto;
 import enums.Categoria;
-import enums.OpcoesCrud;
+import enums.OpcaoFiltro;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.regex.*;
 import servicos.exceptions.ServicoException;
 import servicos.interfaces.TemId;
 
-public class CrudProdutoService implements CrudService {
+public class ProdutoService  {
     
     private static Scanner sc = new Scanner(System.in);
+    private List<Produto> produtos = new ArrayList<>();
 
-    //Instância única
-    private static CrudProdutoService instancia;
-
-    //Controller das ações
-    private ProdutoController pc = ProdutoController.getInstance();
-
-    private CrudProdutoService() {
-    }
-
-    public static CrudProdutoService getInstance() {
-
-        if (instancia == null) {
-            instancia = new CrudProdutoService();
-        }
-
-        return instancia;
-    }
-
-    public ProdutoController getPc() {
-        return pc;
-    }
-
-    @Override
-    public void gerenciarOpcao(int opc) {
-
-        List<OpcoesCrud> opcoesCrud = OpcoesCrud.getOpcoesCrud();
-
-        OpcoesCrud opcaoEscolhida = null;
-        for (OpcoesCrud opcao : opcoesCrud) {
-
-            if (opcao.getId() == opc) {
-                opcaoEscolhida = opcao;
-                break;
-            }
-        }
-
-        switch (opcaoEscolhida) {
-            
-            case CRIAR:
-                
-                Produto produto = criarProduto();
-                pc.criarRegistro(produto);
-                
-                break;
-            case BUSCAR:
-
-                break;
-            case ALTERAR:
-
-                break;
-            case DELETAR:
-
-                break;
-            case EXIBIR:
-
-                break;
-        }
-
+    public ProdutoService() {
     }
     
     
-    private Produto criarProduto (){
-        
+    public List<Produto> getProdutos() {
+        return produtos;
+    }
+
+    public Produto criarProduto() {
+
         System.out.println();
         System.out.println("Criando produto...");
+
+        String nome = lerOpcString("nome");
+        Produto produtoRepetido = produtoRepetido(nome);
         
-        String nome = lerOpcString ("nome");
-        
-        //Quantidade será incrementada
-        if (pc.produtoExiste(nome)) {
-            
-            if (novoProduto()){
-                
+        //Existe produto com esse nome
+        if (produtoRepetido != null) {
+
+            if (novoNome()) {
+
                 String nomeAnterior = nome;
-                
-                while (nome.equalsIgnoreCase(nomeAnterior)){
+
+                while (nome.equalsIgnoreCase(nomeAnterior)) {
                     
-                    System.out.println();
                     nome = lerOpcString("novo nome");
-                    if (nome.equalsIgnoreCase(nomeAnterior)) System.out.println("Inválido!");
+                    boolean teveAlteracao = !nome.equalsIgnoreCase(nomeAnterior);
+                    
+                    System.out.println(teveAlteracao ? "Novo Produto!": "Nome não alterado");
+                    
                 }
+            } else {
+                produtoRepetido.incrementarQuantidade();
+                return produtoRepetido;
             }
-            
-            else {
-                
-                //Retorna produto já existente
-                return new Produto(nome);
-            }
-            
+
         }
         
-        Categoria categoria = gerarObj ("categoria para o produto",  Categoria.getCategorias());
-        BigDecimal preco = lerPreco ();
+        exibirEnums("categoria para o produto", Categoria.getElementos());
         
-        System.out.println();
-        System.out.println(" 1 - Incluir tags no produto");
-        System.out.println(" 2 - NÃO incluir tags no produto");
         System.out.print("Sua escolha: ");
+        int opcCategoria = lerOpcaoInt(Categoria.getElementos().size());
         
-                
-        //Adiciona tags ao produto
-        
-        int opc = lerOpcaoInt(2);
-        List<String> tags = (opc == 1 ) ? lerTags () : new ArrayList<>();
-        
-        return new Produto(LocalDateTime.now(), LocalDateTime.now(), nome, categoria, preco, tags, 1);
+        Categoria categoria = Categoria.getElementos().get(opcCategoria - 1);
+        BigDecimal preco = lerPreco();
+
+        return new Produto(LocalDateTime.now(), LocalDateTime.now(), nome, categoria, preco, 1);
     }
     
+
+    public void addProduto(Produto produto) {
+        produtos.add(produto);
+    }
     
-    private boolean novoProduto() {
-        
+
+    private boolean novoNome() {
+
         System.out.println();
         System.out.println("Produto já existente! ");
-        System.out.println("1 - Adicionar mais um deste mesmo produto");
-        System.out.println("2 - Adicionar produto diferente");
+
+        exibirOpcoes(Arrays.asList("Adicionar mais um deste mesmo produto", "Adicionar produto diferente"));
         System.out.print("Sua escolha: ");
-        
+
         //True se desejar criar novo produto
         return lerOpcaoInt(2) == 2;
-        
+
     }
+
+//    //Filtra produto a ser alterado
+//    public Produto filtrarProduto() {
+//
+//        if (pc.getProdutos().isEmpty()) {
+//            throw new ServicoException("Sem produtos para alteração!");
+//        }
+//
+//        System.out.println();
+//        System.out.println("Como deseja filtrar o produto?");
+//
+//        exibirOpcoes(OpcoesFiltro.getElementos());
+//        System.out.print("Sua escolha: ");
+//        
+//        int opc = lerOpcaoInt(OpcoesFiltro.getElementos().size());
+//        
+//        //Retorna dado passado da opção escolhida
+//        Object dado = lerDadoFiltro (opc);
+//
+//        Produto produtoAntigo = FilterService.filtrar(pc.getProdutos(), dado);
+//        
+//        if (produtoAntigo == null) throw new ServicoException("Não existe produto com esse/a " +dado);
+//        return produtoAntigo;
+//    }
     
-    private List<String> lerTags (){
+    private Object lerDadoFiltro (final int opc){
         
-        int count = 1;
-        List<String> tags = new ArrayList<>();
-            
-        char opc = 's';
-        while (opc != 'n'){
-            
-            System.out.println();
-            System.out.print("Digite tag " + count++ + " do produto: ");
-            
-            
-            String tag = sc.next();
-            
-            tags.add(tag);
-            System.out.print("Continuar adicionando? ");
-            
-            opc = sc.next().toLowerCase().charAt(0);
-        
+        //Converter opção para Enum pro switch consumir
+        OpcaoFiltro of = null;
+        for (OpcaoFiltro opcao : OpcaoFiltro.getElementos()) {
+            if (opcao.getId() == opc){
+                of = opcao;
+                break;
+            } 
         }
         
-        return tags;
+        
+        Object dado = null;
+        
+        switch (of) {
+            case NOME:
+                dado = lerOpcString("nome");
+                break;
+            case ID:
+                dado = lerOpcaoInt("ID");
+                break;
+            case PRECO:
+                dado = lerPreco();
+                break;
+        }
+        
+        return dado;
     }
     
-    private BigDecimal lerPreco(){
+    private Produto alterarProduto(Produto produtoAntigo){
+        return null;
+    };
+
+    private <String> void exibirOpcoes(List<String> lista) {
+
+        int count = 1;
+        System.out.println();
+        for (String s : lista) {
+            System.out.println(count + " - " + s.toString());
+            count++;
+        }
         
+    }
+
+    private BigDecimal lerPreco() {
+
         System.out.println();
         System.out.print("Digite preço do produto: ");
-        
+
         String preco = sc.next();
-        
+
         //Substitui por vírgula
         return precoValido(preco);
     }
-    
-    private BigDecimal precoValido (String preco){
-        if (preco.matches( "[^0-9.,]+")) throw new ServicoException("Preço deve conter apenas números (Reais e centavos)");
-        if (preco.contains(",")) preco = preco.replace(",", ".");
+
+    private BigDecimal precoValido(String preco) {
+        if (preco.matches("[^0-9.,]+")) {
+            throw new ServicoException("Preço deve conter apenas números (Reais e centavos)");
+        }
+        if (preco.contains(",")) {
+            preco = preco.replace(",", ".");
+        }
         return new BigDecimal(preco);
     }
-    
-    
-    private <T extends TemId> T gerarObj (final String tipoDado, List<T> lista){
+
+   private <T extends TemId> void exibirEnums(final String tipoDado, List<T> lista) {
+        System.out.println();
+
+        System.out.println("Opções de " + tipoDado + ":");
+
+        for (T t : lista) {
+            System.out.println(t.getId() + " - " + t);
+        }
+    }
+
+    private String lerOpcString(final String tipoDado){
         
         System.out.println();
-        
-        System.out.println("Opções de " +tipoDado+ ":");
-        
-        for (T t : lista) {
-            System.out.println(t.getId() + " - " +t);
-        }
-        
-        System.out.print("Sua escolha: ");
-        int opc = lerOpcaoInt(lista.size());
-        
-        //Retorna objeto do index
-        return lista.get(opc - 1);
-    }
-    
-    private String lerOpcString(final String tipoDado) {
-        
         System.out.print("Digite " + tipoDado + " do produto: ");
-        
-        String s = sc.next(); 
-        
+
+        String s = sc.next();
+
         //Formatando nome do produto - primeira letra maiúscula
         s = s.substring(0, 1).toUpperCase().concat(s.substring(1).toLowerCase());
-        
-        if (!soString(s)) throw new ServicoException(tipoDado+ " deve conter apenas caracteres alfabéticos!");
-        
+
+        if (!soString(s)) {
+            throw new ServicoException(tipoDado + " deve conter apenas caracteres alfabéticos!");
+        }
+
         return s;
     }
-    
-    private int lerOpcaoInt (final int total){
+
+    private int lerOpcaoInt(final int total) {
         int opc = Integer.parseInt(sc.next());
-        if (!soInt(opc) || opc < 0 || opc > total) throw new ServicoException("Opção inválida!");
+        if (opc < 0 || opc > total) {
+            throw new ServicoException("Opção inválida!");
+        }
         return opc;
     }
     
-    //True se só int
-    private boolean soInt (final int n){
-        return Pattern.compile("[Z0-9]+").matcher(String.valueOf(n)).matches();
-    }
+    
+    //Sobrecarga para leitura em filtragem
+    private int lerOpcaoInt (final Object tipoDado){
+        
+        System.out.println();
+        System.out.print("Digite " +tipoDado+ " do produto: ");
+        
+        int opc = Integer.parseInt(sc.next());
+        
+        return opc;
+    };
+
     
     //True se só string
-    private boolean soString (final String s){
+    private boolean soString(final String s) {
         return Pattern.compile("^[a-zA-ZÀ-ÿ,\". ]+$").matcher(s).matches();
+    }
+    
+    
+    
+    public Produto produtoRepetido(final String nome) { 
+        
+        Produto produto = null;
+        
+        if (!produtos.isEmpty()){
+            
+            produto = produtos.stream()
+                    .filter(p -> p.getNome().equalsIgnoreCase(nome))
+                    .findFirst()
+                    .orElse (null);
+        }
+        
+        return produto;
+    }
+    
+    ///Aumenta quantidade daquele produto no estoque
+    public void incrementarQtd(final String nome) {
+        produtos.stream().
+                filter(p -> p.getNome().equals(nome))
+                .forEach(p -> p.incrementarQuantidade());
+    }
+
+    
+  
+    public void buscarRegistro(int id) {
+    }
+
+
+    public void alterarRegistro(Produto produtoAntigo, Produto produtoNovo) {
+        
+        
+        
+    }
+
+
+    public void deletarRegistro(Produto produto) {
+    }
+
+    
+    //Chama produto comparator
+ 
+    public void classificarRegistros(int opc) {
+        produtos.sort(new ComparatorService(opc));
     }
 
 }

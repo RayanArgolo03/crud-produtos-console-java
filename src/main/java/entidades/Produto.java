@@ -4,51 +4,44 @@ import enums.Categoria;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import servicos.interfaces.TemId;
 
-public class Produto {
+public class Produto implements TemId{
     
     private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private static int incrementoId = 1;
 
-    private int id;
+    private Integer id;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataUltimaAtualizacao;
     private String nome;
     private Categoria categoria;
     private BigDecimal preco;
-    private List<String> tags;
-    private int versao;
-    private int quantidade;
+    private Integer versao;
+    private Integer quantidade;
 
-    public Produto(LocalDateTime dataCriacao, LocalDateTime dataUltimaAtualizacao, String nome, Categoria categoria, BigDecimal preco, List<String> tags, int versao) {
+    public Produto() {
+    }
+
+    public Produto(LocalDateTime dataCriacao, LocalDateTime dataUltimaAtualizacao, String nome, Categoria categoria, BigDecimal preco, Integer versao) {
         this.id = incrementoId;
         this.dataCriacao = dataCriacao;
         this.dataUltimaAtualizacao = dataUltimaAtualizacao;
         this.nome = nome;
         this.categoria = categoria;
         this.preco = preco;
-        
-        this.tags = (!tags.isEmpty()) ? tags :new ArrayList<>(); 
         this.versao = versao;
         
         //Quantidade é incrementada ao adicionar na lista
         this.quantidade = 1;
     }
-    
-    
-    //Retorna nome do produto para aumentar quantidade
-    public Produto (String nome){
-        this.nome = nome;
-    }
-    
 
-    public static int getIncremento() {
+    public static Integer getIncremento() {
         return incrementoId;
     }
 
+    @Override
     public int getId() {
         return id;
     }
@@ -73,23 +66,16 @@ public class Produto {
         return preco;
     }
 
-    public List<String> getTags() {
-        return tags;
-    }
 
     public int getVersao() {
         return versao;
     }
 
-    public int getQuantidade() {
+    public Integer getQuantidade() {
         return quantidade;
     }
 
-    public void setQuantidade(int quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public int incrementarQuantidade() {
+    public Integer incrementarQuantidade() {
         return this.quantidade++;
     }
 
@@ -100,28 +86,6 @@ public class Produto {
         sb.append("Nome: ").append(nome).append("\n");
         sb.append("Categoria: ").append(categoria.toString()).append("\n");
         sb.append("Preço: ").append(String.format("R$ %.2f", preco)).append("\n");
-        
-        //Exibindo tags
-        if (!tags.isEmpty()) {
-            
-            String auxTags = "";
-            int i = 0;
-            for (String tag : tags) {
-                
-                auxTags += tag;
-                if (i != tags.size() - 1) auxTags += ", ";
-                i++;
-            }
-            
-            sb.append("Tags: ").append(auxTags);
-        }
-        
-        else {
-            sb.append("Sem tags!");
-        }
-        
-        sb.append("\n");
-        
         sb.append("Criado em: ").append(dtf.format(dataCriacao)).append("\n");
         sb.append("Última Atualização: ").append(dtf.format(dataUltimaAtualizacao)).append("\n");
         sb.append("Versão do produto: ").append(versao).append("\n");

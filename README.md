@@ -4,15 +4,16 @@ Este é um projeto em Java que oferece funcionalidades de CRUD (Create, Read, Up
 
 ## Funcionalidades
 
-- **Criar Produto:** Permite ao usuário criar um novo produto com informações como nome, categoria, preço e tags associadas.
+- **Criar Produto:** ✅
 
-- **Buscar Produto:** 🚧
+- **Buscar Produto:** ✅ 
 
-- **Alterar Produto:** 🚧
 
-- **Deletar Produto:** 🚧
+- **Alterar Produto:** ✅
 
-- **Exibir Produto:** 🚧
+- **Deletar Produto:** ✅
+
+- **Exibir Produto:** ✅
 
 ## Camadas do Projeto
 

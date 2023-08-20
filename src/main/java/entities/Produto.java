@@ -1,49 +1,47 @@
-package entidades;
+package entities;
 
 import enums.Categoria;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import servicos.interfaces.TemId;
+import interfaces.TemId;
 
 public class Produto implements TemId{
     
+    private static int incremento = 1;
     private static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-    private static int incrementoId = 1;
-
-    private Integer id;
+    
+    private int id;
     private LocalDateTime dataCriacao;
     private LocalDateTime dataUltimaAtualizacao;
     private String nome;
     private Categoria categoria;
     private BigDecimal preco;
-    private Integer versao;
-    private Integer quantidade;
+    private int versao;
+    private int quantidade;
 
     public Produto() {
     }
 
-    public Produto(LocalDateTime dataCriacao, LocalDateTime dataUltimaAtualizacao, String nome, Categoria categoria, BigDecimal preco, Integer versao) {
-        this.id = incrementoId;
+    public Produto(LocalDateTime dataCriacao, LocalDateTime dataUltimaAtualizacao, String nome, Categoria categoria, BigDecimal preco, int versao) {
+        id = incrementoId();
         this.dataCriacao = dataCriacao;
         this.dataUltimaAtualizacao = dataUltimaAtualizacao;
         this.nome = nome;
         this.categoria = categoria;
         this.preco = preco;
         this.versao = versao;
-        
-        //Quantidade é incrementada ao adicionar na lista
         this.quantidade = 1;
     }
 
-    public static Integer getIncremento() {
-        return incrementoId;
-    }
-
+   
     @Override
     public int getId() {
         return id;
+    }
+    
+    private static int incrementoId(){
+        return incremento++;
     }
 
     public LocalDateTime getDataCriacao() {
@@ -66,17 +64,21 @@ public class Produto implements TemId{
         return preco;
     }
 
-
     public int getVersao() {
         return versao;
     }
 
-    public Integer getQuantidade() {
+    public int getQuantidade() {
         return quantidade;
     }
+    
 
-    public Integer incrementarQuantidade() {
-        return this.quantidade++;
+    public void incrementarQuantidade() {
+        this.quantidade++;
+    }
+    
+    public int novaVersao (){
+        return this.versao++;
     }
 
     @Override
@@ -92,7 +94,6 @@ public class Produto implements TemId{
         sb.append("Quantidade em estoque: ").append(quantidade);
         return sb.toString();
     }
-
     
 
 }

@@ -1,5 +1,5 @@
 
-package servicos.interfaces;
+package interfaces;
 
 
 public interface TemId {

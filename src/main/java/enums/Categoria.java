@@ -2,7 +2,7 @@ package enums;
 
 import java.util.Arrays;
 import java.util.List;
-import servicos.interfaces.TemId;
+import interfaces.TemId;
 
 public enum Categoria implements TemId {
 

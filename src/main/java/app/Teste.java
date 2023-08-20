@@ -1,40 +1,33 @@
-package teste;
+package app;
 
-import enums.OpcoesCrud;
+import services.ProdutoService;
+import controllers.ProdutoController;
+import enums.OpcaoCrud;
 import java.util.*;
-import servicos.*;
 
 public class Teste {
+    
+    //TESTAR LÓGICA DE COMPARAÇÃO DE PRODUTO!!!
 
     private static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
         
-        //Singleton - Produto concreto de interface
-        CrudService cs = CrudProdutoService.getInstance();
-        
+        //Singleton e Injeção de Dependência
+        ProdutoController produtoController = ProdutoController.getInstance();
+        produtoController.setProdutoService(new ProdutoService());
+
         printTitulo();
 
         int opc = 0;
         do {
-
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            //IMPLEMENTAR LÓGICA DE ALTERAÇÃO DE PRODUTO
-            
-            
-            //Recebe entidade do crud
-            final String TIPO_ENTIDADE = "PRODUTO";
-
-            System.out.println("Escolha sua opção:  ");
+            String entidade = "PRODUTO";
             
             System.out.println();
-            printOpcoesCrud(TIPO_ENTIDADE);
+            System.out.println("Escolha sua opção:  ");
+
+            System.out.println();
+            printOpcoesCrud(entidade);
 
             System.out.print("Sua escolha: ");
 
@@ -46,7 +39,7 @@ public class Teste {
                     System.out.println();
                     System.out.println("Inválida!");
 
-                    printOpcoesCrud(TIPO_ENTIDADE);
+                    printOpcoesCrud(entidade);
 
                     System.out.print("Sua escolha: ");
                     opc = Integer.parseInt(sc.next());
@@ -54,14 +47,14 @@ public class Teste {
                 }
 
                 if (opc == 6) {
-                    
+
                     System.out.println();
                     System.out.println("Obrigado por utilizar!");
                     break;
-                    
+
                 }
 
-                cs.gerenciarOpcao(opc);
+               produtoController.gerenciarOpcao(opc);
 
             } catch (RuntimeException e) {
                 System.out.println();
@@ -85,24 +78,23 @@ public class Teste {
         System.out.println();
     }
 
-    private static void printOpcoesCrud(final String TIPO_ENTIDADE) {
+    private static void printOpcoesCrud(String entidade) {
 
-        List<OpcoesCrud> opcoescrud = OpcoesCrud.getOpcoesCrud();
+        List<OpcaoCrud> opcoescrud = OpcaoCrud.getElementos();
 
         for (int i = 0; i < opcoescrud.size(); i++) {
 
-            OpcoesCrud opc = opcoescrud.get(i);
-            String opcaoStr = String.format("%d%s%s %s", opc.getId(), " - ", opc, TIPO_ENTIDADE);
-
-            //Se for opc exibir, são "produtos"
-            if (opc.equals(OpcoesCrud.EXIBIR)) {
-                opcaoStr += "S";
-            }
+            OpcaoCrud opc = opcoescrud.get(i);
             
+            //Sair não recebe produto, exibir recebe produto + S
+            String opcaoStr = (opc.equals(OpcaoCrud.SAIR))
+                    ? String.format("%d%s%s", opc.getId(), " - ", opc)
+                    : (opc.equals(OpcaoCrud.EXIBIR))
+                    ? String.format("%d%s%s %s", opc.getId(), " - ", opc, entidade + "S")
+                    : String.format("%d%s%s %s", opc.getId(), " - ", opc, entidade);
+
             System.out.println(opcaoStr);
         }
-        
-        System.out.println("6 - " +OpcoesCrud.SAIR.toString());
 
     }
 
